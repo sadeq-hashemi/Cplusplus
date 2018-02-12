@@ -23,8 +23,13 @@ void get_students(ifstream& file, list<string>& list) {
   }
 }
 
+/*
+Takes both lists, and compares values. All_students will
+be every student that exists in both, and shared_students
+is the students that are common to both courses.
+*/
 void compare_lists(list<string>& l1, list<string>& l2,
-   list<string>& all_students, list<string>& shared_students) {
+   list<string>& all, list<string>& shared) {
 
   string name;
   list<string>::iterator it;
@@ -33,12 +38,21 @@ void compare_lists(list<string>& l1, list<string>& l2,
     l1.pop_front(); //removes first name
     list<string>::iterator it = find(l2.begin(), l2.end(), name); //search in second list
     if(it != l2.end() ) {  //exists in both lists
-
+      all.push_front(name);
+      shared.push_front(name);
+      l2.erase(it); //WHAT IF IT FOUND BUT ITS AT THE END?
     } else { //only in first list 
-
+      all.push_front(name);
     }
   }
- 
+
+  //At this point, l1 should be empty, and
+  //all shared names have been entered
+  while(!l2.empty()) {
+    name = l2.front();
+    l2.pop_front();
+    all.push_front(name);
+  }
 }
 
 int main(){
@@ -82,7 +96,14 @@ list<string>  list1, list2, either, both;
   get_students(file2, list2);
   
 //output # of students in each: "Number of students in <file1> = <n1>"
+  cout << "Number of students in "<< filename1 << " = " << list1.size() << endl; 
+  cout << "Number of students in "<< filename2 << " = " << list2.size() << endl; 
 //output: # of students that are present in both/either <file1> and <file2> = <n2>
+  compare_lists(list1, list2, either, both);
+  cout << "Number of students that are present in both  "<< filename1 << " and "
+       << filename2 << " = " << both.size() << endl; 
+  cout << "Number of students in either "<< filename1 << " or " 
+       << filename2 << " = " << either.size() << endl; 
 // also store in 2 output files named intersection.txt and union.txt
 
   file1.close();
