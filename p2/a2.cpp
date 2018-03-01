@@ -44,38 +44,22 @@ void cleanData(std::ifstream &inFile, std::ofstream &outFile,
     //   6. Remove words with just one character in them. You should NOT remove
     //      numbers in this step because if you do so, you'll lose the ratings.
     //   7. Remove stopwords.
-
-/*     string punc = "!@#$%^&*(),./;'{}|[]-\\\""; //string containing all chars that should be removed
-    string delim = " ";
-    string word; 
-    for(string line; getline(inFile, line); ) {
-      cout << line << endl; 
-      for(int i = 0; i < line.length(); ++i) {
-        if(punc.find(line[i]) != string::npos)
-          line.replace(i, 1, " "); //replaces all unwanted chars with spaces
-      }
-     stringstream ssline(line);
-      while(getline(ssline, word, ' ')) {
-        //checks for valid words and writes to outFile
-        if(stopwords.find(word) != stopwords.end() || word.length() > 1 || (word.length() == 1 && isdigit(word[0])) )
-          //CONTINUE
-          //write to file
-      }
-      cout << line <<endl;
-      cout <<endl;
-    }
-*/
-
 vector<string> vec, vec2;
-string str = "Hi-me-youi second third'fourth   fifth!   manoto+";
-cout << str << endl;
+    string line;
+//must run these from every line
+    while(getline(inFile, line) {
+      replaceHyphensWithSpaces(line);
+      splitLine(line, vec);
+      removePunctuation(vec, vec2);
+      removeWhiteSpaces(vec2);
+      removeEmptyWords(vec2);
+      removeSingleLetterWords(vec2);
 
-    replaceHyphensWithSpaces(str);
-    splitLine(str, vec);
-    removePunctuation(vec, vec2);
-    removeWhiteSpaces(vec2);
-    removeEmptyWords(vec2);
-    removeSingleLetterWords(vec2);
+      //vec2 is correct, will concatenate
+      for (string word: vec2) {
+        //CONTINUE
+      }
+    }
 cout << "punctuations, whitespaces, empty, single:" << endl;
 for(auto p : vec2)
   cout << p << endl;
@@ -177,9 +161,10 @@ void replaceHyphensWithSpaces(std::string &line) {
 void splitLine(std::string &line, std::vector<std::string> &words) {
     // TODO: Implement this method.
     // approximate # of lines of code in Gerald's implementation: < 10
-    string word;
+    string word, concat;
     stringstream ssline(line);
     while(getline(ssline, word, ' ')) {
+      //concat +='"' + word + '"' + "|";
       words.push_back(word);
     }
 }
