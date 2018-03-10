@@ -28,7 +28,7 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
-
+#include <queue>
 using namespace std;
 void cleanData(std::ifstream &inFile, std::ofstream &outFile,
                std::unordered_set<std::string> &stopwords) {
@@ -44,34 +44,70 @@ void cleanData(std::ifstream &inFile, std::ofstream &outFile,
     //   6. Remove words with just one character in them. You should NOT remove
     //      numbers in this step because if you do so, you'll lose the ratings.
     //   7. Remove stopwords.
-vector<string> vec, vec2;
+    vector<string>  vec, vec2;
+    queue<vector<string>> allLines;
     string line;
-//must run these from every line
-    while(getline(inFile, line) {
+    //run functions on every line
+    while(getline(inFile, line)) {
       replaceHyphensWithSpaces(line);
       splitLine(line, vec);
       removePunctuation(vec, vec2);
       removeWhiteSpaces(vec2);
       removeEmptyWords(vec2);
       removeSingleLetterWords(vec2);
+      removeStopWords(vec2, stopwords);
+      allLines.push(vec2);
+      vec.clear();  //clears vectors for new iteration
+      vec2.clear();
+   }
 
-      //vec2 is correct, will concatenate
-      for (string word: vec2) {
-        //CONTINUE
+    //write to output
+    while(!allLines.empty()) {
+      vec = allLines.front();
+      allLines.pop();
+      for (auto p: vec)
+        outFile << p << " ";
+      outFile << endl;
       }
     }
-cout << "punctuations, whitespaces, empty, single:" << endl;
-for(auto p : vec2)
-  cout << p << endl;
-cout << endl;
-
-
-}
 
 void fillDictionary(std::ifstream &newInFile,
                     std::unordered_map<std::string, std::pair<long, long>> &dict) {
     // TODO: Implement this method.
     // approximate # of lines of code in Gerald's implementation: < 20
+    string line;
+    string word;
+    istringstream iss; 
+    char delim = ' ';
+    long value;
+    pair<long, long> dictVal; 
+    pair<string, pair<long,long>> dictInsert;
+    while(getline(newInFile, line)) {
+       //reading new line
+       iss.str(line);
+       while(getline(iss, word, delim)){
+         //parsing line
+         if(isdigit(word[0]))
+           value = stol(word); //sets value
+         else {
+           if(dict.find(word) == dict.end()) {
+             //new key
+             dictVal = make_pair(value, 1); //rating and count pair     
+             dictInsert = make_pair(word, dictVal); //dictionary insertion
+             dict.insert(dictInsert);
+           } else {
+             //key exists
+             dictVal = dict[word];
+             dictVal.first += value;
+             dictVal.second++; 
+             dict[word] = dictVal; 
+          }
+         }
+       }
+       value = 0;
+       iss.clear();
+    }
+
 }
 
 
@@ -90,6 +126,7 @@ void rateReviews(std::ifstream &testFile,
                  std::ofstream &ratingsFile) {
     // TODO: Implement this method.
     // approximate # of lines of code in Gerald's implementation: < 20
+
 }
 
 void removeEmptyWords(std::vector<std::string> &tokens) {
@@ -133,8 +170,9 @@ void removeStopWords(std::vector<std::string> &tokens,
     // TODO: Implement this method.
     // approximate # of lines of code in Gerald's implementation: < 5
     for (vector<string>::iterator it= tokens.begin(); it != tokens.end(); ++it) {
-      if(stopwords.find(*it) != stopwords.end())
+      if(stopwords.find(*it) != stopwords.end()) {
         tokens.erase(it);
+       }
     }   
 }
 
