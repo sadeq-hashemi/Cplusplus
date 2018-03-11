@@ -15,7 +15,7 @@
 
 #include "a2.hpp"
 #include "trim.hpp"
-
+#include <typeinfo>
 #include <algorithm>
 #include <cctype>
 #include <fstream>
@@ -77,6 +77,7 @@ void fillDictionary(std::ifstream &newInFile,
     // approximate # of lines of code in Gerald's implementation: < 20
     string line;
     string word;
+    int set = 0; 
     istringstream iss; 
     char delim = ' ';
     long value;
@@ -85,26 +86,29 @@ void fillDictionary(std::ifstream &newInFile,
     while(getline(newInFile, line)) {
        //reading new line
        iss.str(line);
+       set = 0; 
        while(getline(iss, word, delim)){
          //parsing line
-         if(isdigit(word[0]))
+         if(!set && isdigit(word[0])) {
            value = stol(word); //sets value
+           set = 1;
+         }
          else {
            if(dict.find(word) == dict.end()) {
              //new key
-             dictVal = make_pair(value, 1); //rating and count pair     
+             dictVal = make_pair((double)value, 1.00); //rating and count pair     
              dictInsert = make_pair(word, dictVal); //dictionary insertion
              dict.insert(dictInsert);
            } else {
              //key exists
              dictVal = dict[word];
-             dictVal.first += value;
-             dictVal.second++; 
+             dictVal.first += (double)value;
+             dictVal.second+= 1.00; 
              dict[word] = dictVal; 
-          }
+          } 
          }
        }
-       value = 0;
+       value = 0.00;
        iss.clear();
     }
 
@@ -126,7 +130,32 @@ void rateReviews(std::ifstream &testFile,
                  std::ofstream &ratingsFile) {
     // TODO: Implement this method.
     // approximate # of lines of code in Gerald's implementation: < 20
-
+    string line;
+    string word;
+    istringstream iss;
+    char delim = ' ';
+    double sum;
+    double count;
+    while(getline(testFile, line)) {
+       //reading new line
+       iss.str(line);
+       sum = 0.0;
+       count = 0.0;
+       while(getline(iss, word, delim)){
+         //parsing line
+           if(dict.find(word) == dict.end()) {
+             //word does not  exists 
+             sum += 2.00;
+             count += 1.00;
+           } else {
+             //key exists
+             sum += (double)dict[word].first/(double)dict[word].second;
+             count ++;
+           }         
+       }
+       iss.clear();
+       ratingsFile << fixed << setprecision(2) << (double)sum/(double)count << endl;       
+    }
 }
 
 void removeEmptyWords(std::vector<std::string> &tokens) {
@@ -159,9 +188,11 @@ void removePunctuation(std::vector<std::string> &inTokens,
 void removeSingleLetterWords(std::vector<std::string> &tokens) {
     // TODO: Implement this method.
     // approximate # of lines of code in Gerald's implementation: < 5
-    for (vector<string>::iterator it= tokens.begin(); it != tokens.end(); ++it) {
+    for (vector<string>::iterator it= tokens.begin(); it != tokens.end();) {
       if( (*it).length() == 1 && isalpha((*it)[0]) )
         tokens.erase(it);
+      else
+        ++it;
     }    
 }
 
@@ -169,9 +200,11 @@ void removeStopWords(std::vector<std::string> &tokens,
                      std::unordered_set<std::string> &stopwords) {
     // TODO: Implement this method.
     // approximate # of lines of code in Gerald's implementation: < 5
-    for (vector<string>::iterator it= tokens.begin(); it != tokens.end(); ++it) {
+    for (vector<string>::iterator it= tokens.begin(); it != tokens.end(); ) {
       if(stopwords.find(*it) != stopwords.end()) {
         tokens.erase(it);
+       } else {
+         ++it;
        }
     }   
 }
