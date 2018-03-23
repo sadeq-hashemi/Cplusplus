@@ -49,6 +49,7 @@ void cleanData(std::ifstream &inFile, std::ofstream &outFile,
     string line;
     //run functions on every line
     while(getline(inFile, line)) {
+      if(line.compare("\n") == 0) continue;
       replaceHyphensWithSpaces(line);
       splitLine(line, vec);
       removePunctuation(vec, vec2);
@@ -80,13 +81,13 @@ void fillDictionary(std::ifstream &newInFile,
     int set = 0; 
     istringstream iss; 
     char delim = ' ';
-    long value;
+    float value; int f;
     pair<long, long> dictVal; 
     pair<string, pair<long,long>> dictInsert;
     while(getline(newInFile, line)) {
        //reading new line
        iss.str(line);
-       set = 0; 
+       set = 0; f = 0;
        while(getline(iss, word, delim)){
          //parsing line
          if(!set && isdigit(word[0])) {
@@ -96,18 +97,19 @@ void fillDictionary(std::ifstream &newInFile,
          else {
            if(dict.find(word) == dict.end()) {
              //new key
-             dictVal = make_pair((double)value, 1.00); //rating and count pair     
+             dictVal = make_pair((float)value, (float)1.00); //rating and count pair     
              dictInsert = make_pair(word, dictVal); //dictionary insertion
              dict.insert(dictInsert);
            } else {
              //key exists
              dictVal = dict[word];
-             dictVal.first += (double)value;
-             dictVal.second+= 1.00; 
+             dictVal.first += (float)value;
+             dictVal.second+= (float)1.00; 
              dict[word] = dictVal; 
-          } 
+          } f = 1;
          }
        }
+if (f == 0 ) cout << fixed << setprecision(3) << " error " <<(float) dict["hard"].first << " " << dict["partying"].first << endl;
        value = 0.00;
        iss.clear();
     }
@@ -134,14 +136,16 @@ void rateReviews(std::ifstream &testFile,
     string word;
     istringstream iss;
     char delim = ' ';
-    double sum;
-    double count;
+    float sum; //double sum;
+    float count; //double count;
+int f;
     while(getline(testFile, line)) {
        //reading new line
        iss.str(line);
        sum = 0.0;
        count = 0.0;
-       while(getline(iss, word, delim)){
+f = 0;
+         while(getline(iss, word, delim)){
          //parsing line
            if(dict.find(word) == dict.end()) {
              //word does not  exists 
@@ -149,12 +153,18 @@ void rateReviews(std::ifstream &testFile,
              count += 1.00;
            } else {
              //key exists
-             sum += (double)dict[word].first/(double)dict[word].second;
+             sum += (float)dict[word].first/(float)dict[word].second;
              count ++;
-           }         
-       }
+           }
+           f = 1;         
+         } 
+       
        iss.clear();
-       ratingsFile << fixed << setprecision(2) << (double)sum/(double)count << endl;       
+       if(f  == 0) {
+         sum = 2.0;
+         count = 1.0;
+       } 
+       ratingsFile << fixed << setprecision(2) << (float)sum/(float)count << endl;       
     }
 }
 
@@ -174,7 +184,7 @@ void removePunctuation(std::vector<std::string> &inTokens,
                        std::vector<std::string> &outTokens) {
     // TODO: Implement this method.
     // approximate # of lines of code in Gerald's implementation: < 10
-    string punc = ".,?!:;-_'\"\n\t\v"; //string containing all chars that should be removed
+    string punc = ".,?!:;-_*$#@%^&*()+=/\\`\'\"\r\f\n\t\v "; //string containing all chars that should be removed
     for(string word: inTokens ) {
       string newWord = "";
       for(int i = 0; i < word.length(); ++i) {
